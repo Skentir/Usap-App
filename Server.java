@@ -1,3 +1,6 @@
+import java.io.*; 
+import java.net.*; 
+import java.util.Scanner; 
 
 // Server class 
 public class Server extends Thread 
@@ -19,7 +22,7 @@ public class Server extends Thread
             dis = new DataInputStream(s.getInputStream());
             bfr = new BufferedReader(dis); 
         } catch (IOException e) {
-            e.printStackTrace()
+            e.printStackTrace();
         }
     }
 
