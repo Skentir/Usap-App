@@ -1,14 +1,38 @@
 
 // Server class 
-public class Server  
+public class Server extends Thread 
 { 
-  
-    // Vector to store active clients 
-    static Vector<ClientHandler> ar = new Vector<>(); 
-      
-    // counter for clients 
-    static int i = 0; 
-  
+     private static ServerSocket ss; 
+     private String nome; 
+     private Socket s;
+     private DataInputStream dis; 
+     private BufferedReader bfr;
+     // Vector to store active clients 
+     static Vector<ClientHandler> ar = new Vector<>(); 
+     // counter for clients 
+     static int i = 0; 
+
+    // Constructor
+    public Server (Socket s) {
+        this.s = s;
+        try {
+            dis = new DataInputStream(s.getInputStream());
+            bfr = new BufferedReader(dis); 
+        } catch (IOException e) {
+            e.printStackTrace()
+        }
+    }
+
+    // Run
+    public void run() {
+        try {
+            String msg;
+            DataOutputStream dos = this.s.getOutputStream();
+            BufferedWriter wr = new BufferedWriter(new OutputStreamWriter(dos));
+            
+        }
+    }
+
     public static void main(String[] args) throws IOException  
     { 
         // server is listening on port 1234 
