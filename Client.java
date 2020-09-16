@@ -14,6 +14,7 @@ public class Client
         dos = new OutputStreamWriter(s.getOutputStream());
         wr = new BufferedWriter(dos);
         name = username;
+        System.out.println("created stuff!");
         // Name of client
         wr.write(this.name);
         wr.flush();
@@ -29,6 +30,7 @@ public class Client
     }
 
     public void listen() throws IOException {
+        System.out.println("Here 2");
         InputStreamReader dis = new InputStreamReader(s.getInputStream());
         BufferedReader br = new BufferedReader(dis);
 
@@ -42,6 +44,12 @@ public class Client
     public static void main(String []args) throws IOException { 
         Client app = new Client(); 
         app.connect(args[0], args[1], args[2]); 
+
+        System.out.println("Enter a message: ");
+        Scanner obj = new Scanner(System.in);
+        String word = obj.nextLine();
+        app.sendMsg(word);
+        
         app.listen(); 
     }
 

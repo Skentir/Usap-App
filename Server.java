@@ -28,7 +28,8 @@ public class Server extends Thread
 
     // Run - Everytime a client connects, a new thread is allocated
     public void run() {
-		try{								 
+        System.out.println("HHHH");	 
+		try{							
 			String msg;
 			OutputStream ou =  this.con.getOutputStream();
 			Writer ouw = new OutputStreamWriter(ou);
@@ -38,7 +39,8 @@ public class Server extends Thread
 				  
 			while(!"logout".equalsIgnoreCase(msg) && msg != null)
 			{           
-				msg = bfr.readLine();
+                msg = bfr.readLine();
+				System.out.println(msg); 
 				sendToAll(bfw, msg);
 				System.out.println(msg);                                              
 			}										 
@@ -53,6 +55,7 @@ public class Server extends Thread
 	{
 		BufferedWriter bwS;
 
+		System.out.println("senf"); 
 		for(BufferedWriter bw :  clients){
 			bwS = (BufferedWriter)bw;
 			if(!(bwOutput == bwS)){
@@ -81,7 +84,8 @@ public class Server extends Thread
 				Socket con = server.accept();
 				System.out.println("Client connected...");
 				Thread t = new Server(con);
-				t.start();   
+                t.start();   // starts the thread
+                this.run(); // when a client connects
 			}
 								 
 		}catch (Exception e) {
