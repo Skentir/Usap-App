@@ -1,17 +1,17 @@
 import java.io.*; 
 import java.net.*; 
-import java.util.Scanner; 
+import java.util.*; 
   
 public class Client  
 { 
     private Socket s;
-    private DataOutputStream ds;
+    private OutputStreamWriter dos;
     private BufferedWriter wr;
     private String name;
     // Connect - connect client to a server socket
     public void connect(String ip, String port, String username) throws IOException {
-        s = newSocket(ip,port);
-        dos = new DataOutputStream(s.getOutputStream());
+        s = new Socket(ip, Integer.parseInt(port));
+        dos = new OutputStreamWriter(s.getOutputStream());
         wr = new BufferedWriter(dos);
         name = username;
         // Name of client
@@ -29,7 +29,7 @@ public class Client
     }
 
     public void listen() throws IOException {
-        DataInputStream dis = new DataInputStream(s.getInputStream());
+        InputStreamReader dis = new InputStreamReader(s.getInputStream());
         BufferedReader br = new BufferedReader(dis);
 
         String msg = "";

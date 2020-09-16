@@ -4,7 +4,7 @@ import java.util.*;
   
   
 // Server class 
-public class ServerTest extends Thread 
+public class Server extends Thread 
 { 
 	private static ArrayList<BufferedWriter> clients;           
 	private static ServerSocket server; 
@@ -15,7 +15,7 @@ public class ServerTest extends Thread
 	private BufferedReader bfr; 
 
     // Constructor
-    public ServerTest(Socket con){
+    public Server(Socket con){
 		this.con = con;
 		try {
 			in  = con.getInputStream();
@@ -80,7 +80,7 @@ public class ServerTest extends Thread
 				System.out.println("Waiting for connection...");
 				Socket con = server.accept();
 				System.out.println("Client connected...");
-				Thread t = new ServerTest(con);
+				Thread t = new Server(con);
 				t.start();   
 			}
 								 
