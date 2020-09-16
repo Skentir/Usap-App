@@ -36,7 +36,7 @@ public class ServerTest extends Thread
 			clients.add(bfw);
 			nome = msg = bfr.readLine();
 				  
-			while(!"Logout".equalsIgnoreCase(msg) && msg != null)
+			while(!"logout".equalsIgnoreCase(msg) && msg != null)
 			{           
 				msg = bfr.readLine();
 				sendToAll(bfw, msg);
