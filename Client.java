@@ -1,8 +1,11 @@
+// Java implementation for multithreaded chat client 
+// Save file as Client.java 
+  
 import java.io.*; 
 import java.net.*; 
 import java.util.Scanner; 
   
-public class Client  
+public class Client 
 { 
     final static int ServerPort = 1234; 
   
@@ -11,10 +14,10 @@ public class Client
         Scanner scn = new Scanner(System.in); 
           
         // getting localhost ip 
-        InetAddress ip = InetAddress.getByName("localhost"); 
+        //InetAddress ip = InetAddress.getByName("localhost"); 
           
         // establish the connection 
-        Socket s = new Socket(ip, ServerPort); 
+        Socket s = new Socket(args[0], Integer.parseInt(args[1])); 
           
         // obtaining input and out streams 
         DataInputStream dis = new DataInputStream(s.getInputStream()); 
