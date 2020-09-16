@@ -27,10 +27,11 @@ public class Server extends Thread
             String msg;
             DataOutputStream dos = this.s.getOutputStream();
             BufferedWriter wr = new BufferedWriter(new OutputStreamWriter(dos));
+            clients.add(wr); 
             
-            
-            clients.add(mtch); 
-            mtch.run();
+            while(!"logout".equalsIgnoreCase(msg)) {
+                msg = wr.readLine()
+            }
 
         } catch (Exception e) {
             e.printStackTrace();

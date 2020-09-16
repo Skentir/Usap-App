@@ -4,63 +4,45 @@ import java.util.Scanner;
   
 public class Client  
 { 
-    final static int ServerPort = 1234; 
-  
-    public static void main(String args[]) throws UnknownHostException, IOException  
-    { 
-        Scanner scn = new Scanner(System.in); 
-          
-        // getting localhost ip 
-        InetAddress ip = InetAddress.getByName("localhost"); 
-          
-        // establish the connection 
-        Socket s = new Socket(ip, ServerPort); 
-          
-        // obtaining input and out streams 
-        DataInputStream dis = new DataInputStream(s.getInputStream()); 
-        DataOutputStream dos = new DataOutputStream(s.getOutputStream()); 
-  
-        // sendMessage thread 
-        Thread sendMessage = new Thread(new Runnable()  
-        { 
-            @Override
-            public void run() { 
-                while (true) { 
-  
-                    // read the message to deliver. 
-                    String msg = scn.nextLine(); 
-                      
-                    try { 
-                        // write on the output stream 
-                        dos.writeUTF(msg); 
-                    } catch (IOException e) { 
-                        e.printStackTrace(); 
-                    } 
-                } 
-            } 
-        }); 
-          
-        // readMessage thread 
-        Thread readMessage = new Thread(new Runnable()  
-        { 
-            @Override
-            public void run() { 
-  
-                while (true) { 
-                    try { 
-                        // read the message sent to this client 
-                        String msg = dis.readUTF(); 
-                        System.out.println(msg); 
-                    } catch (IOException e) { 
-  
-                        e.printStackTrace(); 
-                    } 
-                } 
-            } 
-        }); 
-  
-        sendMessage.start(); 
-        readMessage.start(); 
-  
-    } 
+    private Socket s;
+    private DataOutputStream ds;
+    private BufferedWriter wr;
+    private String name;
+    // Connect - connect client to a server socket
+    public void connect(String ip, String port, String username) throws IOException {
+        s = newSocket(ip,port);
+        dos = new DataOutputStream(s.getOutputStream());
+        wr = new BufferedWriter(dos);
+        name = username;
+        // Name of client
+        wr.write(this.name);
+        wr.flush();
+    }
+
+    public void sendMsg(String msg) throws IOException {
+        if (msg.equals("logout")) {
+            wr.write("Disconnected");
+        } else {
+            wr.write(this.name + " : " + msg);
+        }
+        wr.flush();
+    }
+
+    public void listen() throws IOException {
+        DataInputStream dis = new DataInputStream(s.getInputStream());
+        BufferedReader br = new BufferedReader(dis);
+
+        String msg = "";
+        while (msg != "logout")  {
+            if(br.ready())
+                msg = br.readLine();
+        }
+    }
+
+    public static void main(String []args) throws IOException { 
+        Client app = new Client(); 
+        app.connect(args[0], args[1], args[2]); 
+        app.listen(); 
+    }
+
 } 
