@@ -39,8 +39,8 @@ public class Client
 
            dos.writeUTF(uname);   
     }
-
-    public void sendMsg() {
+ 
+    public void sendMsg() throws IOException {
         // sendMessage thread 
         Thread sendMessage = new Thread(new Runnable()  
         { 
@@ -64,7 +64,7 @@ public class Client
         sendMessage.start(); 
     }
 
-    public void listen() {
+    public void listen() throws IOException {
         Thread readMessage = new Thread(new Runnable()  
         { 
             @Override
@@ -94,19 +94,20 @@ public class Client
 
         pnlContent = new JPanel(); */
 
-        scn = new Scanner(System.in); 
-          
+        Client client = new Client();
+        Scanner scn = new Scanner(System.in);
+        client.scn = scn; 
         // getting localhost ip 
         //InetAddress ip = InetAddress.getByName("localhost"); 
-          
+        
         // establish the connection 
-        this.connect(args[0],Integer.parseInt(args[1]), args[2]);
+        client.connect(args[0],Integer.parseInt(args[1]), args[2]);
         
         // sendMessage thread
-        this.sendMsg();
+        client.sendMsg();
           
         // readMessage thread 
-        this.listen();
+        client.listen();
   
     } 
 } 
