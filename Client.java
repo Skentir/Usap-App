@@ -19,7 +19,6 @@ public class Client extends JFrame
 
     //For testing
     private Scanner scn;
-    final static int ServerPort = 12345; 
     
     private JPanel pnlContent;
     private CardLayout cardlayout;
@@ -33,7 +32,7 @@ public class Client extends JFrame
         pnlContent = new JPanel();
         
         login = new LoginPanel(cardlayout,pnlContent,this);
-        messenger = new MessengerPanel(cardlayout,pnlContent);
+        messenger = new MessengerPanel(cardlayout,pnlContent,this);
 
         pnlContent.setLayout(cardlayout);
         pnlContent.add(login, "login");
@@ -107,6 +106,12 @@ public class Client extends JFrame
             } 
         }); 
         readMessage.start(); 
+    }
+
+    public void terminate() throws IOException {
+        dis.close();
+        dos.close();
+        s.close();
     }
   
     public static void main(String args[]) throws IOException
@@ -196,10 +201,12 @@ class MessengerPanel extends JPanel implements ActionListener {
     
     CardLayout card;
     JPanel pnl;
+    Client cl;
 
-    public MessengerPanel(CardLayout card, JPanel pnl) {
+    public MessengerPanel(CardLayout card, JPanel pnl, Client cl) {
         this.card = card;
         this.pnl = pnl;
+        this.cl = cl;
 
         text = new JTextArea(10,20);
         text.setEditable(false);
@@ -220,6 +227,14 @@ class MessengerPanel extends JPanel implements ActionListener {
     }   
     @Override
     public void actionPerformed(ActionEvent e) {
-        card.next(pnl);
+        try {
+            exit();
+            card.next(pnl);
+        } catch (IOException err) {
+            System.out.println("Cannot exit!");
+        }
+    }
+    public void exit() throws IOException {
+        cl.terminate();
     }
 }
