@@ -6,7 +6,7 @@ import java.net.*;
 import java.util.*; 
 import javax.swing.*;
   
-public class Client  
+public class Client extends JFrame 
 { 
     private DataInputStream dis;
     private DataOutputStream dos;
@@ -17,12 +17,12 @@ public class Client
     private Scanner scn;
 
     private JTextArea text; 
+    private JTextField txtMsg; 
     private JTextField txtIP; 
     private JTextField txtPort; 
     private JTextField txtName; 
     private JButton btnSend; 
-    private JButton btnLogout; 
-    private JLabel lblHistorico; 
+    private JButton btnLogout;
     private JLabel lblMsg; 
     private JPanel pnlContent;
     
@@ -31,6 +31,24 @@ public class Client
     public Client() throws IOException {
         pnlContent = new JPanel();
         text = new JTextArea(10,20);
+        text.setEditable(false);
+
+        txtMsg = new JTextField(20);
+        lblMsg = new JLabel("Message");
+        btnSend = new JButton("Send");
+
+        JScrollPane scroll = new JScrollPane(text);
+        pnlContent.add(scroll);
+        pnlContent.add(lblMsg);
+        pnlContent.add(txtMsg);
+        pnlContent.add(btnSend);
+
+        setContentPane(pnlContent);
+        setLocationRelativeTo(null);
+        setResizable(false);
+        setSize(250,300);
+        setVisible(true);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
 
     public void connect(String ip, Integer port, String name) throws IOException {
