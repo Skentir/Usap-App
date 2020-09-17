@@ -1,5 +1,6 @@
 Server.class
 Client.class
 ServerTest.class
+ClientHandler.class
 Client$1.class
 Client$2.class
