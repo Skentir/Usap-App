@@ -18,7 +18,6 @@ public class Server
   
     public static void main(String[] args) throws IOException  
     { 
-        // server is listening on port 1234 
         ServerSocket ss = new ServerSocket(Integer.parseInt(args[0])); 
           
         Socket s; 
@@ -35,11 +34,13 @@ public class Server
             // obtain input and output streams 
             DataInputStream dis = new DataInputStream(s.getInputStream()); 
             DataOutputStream dos = new DataOutputStream(s.getOutputStream()); 
-              
-            System.out.println("Creating a new handler for this client..."); 
-  
+            
+            String tempName = dis.readUTF();
+
+            System.out.println("Creating a new handler for " + tempName + "..."); 
+            
             // Create a new handler object for handling this request. 
-            ClientHandler mtch = new ClientHandler(s,"client " + i, dis, dos); 
+            ClientHandler mtch = new ClientHandler(s, tempName, dis, dos); 
   
             // Create a new Thread with this object. 
             Thread t = new Thread(mtch); 
@@ -92,29 +93,23 @@ class ClientHandler implements Runnable
                 // receive the string 
                 received = dis.readUTF(); 
                   
-                System.out.println(received); 
+                System.out.println(this.name + ":" + received); 
                   
                 if(received.equals("logout")){ 
                     this.isloggedin=false; 
                     this.s.close(); 
                     break; 
                 } 
-                  
-                // break the string into message and recipient part 
-                StringTokenizer st = new StringTokenizer(received, "#"); 
-                String MsgToSend = st.nextToken(); 
-                String recipient = st.nextToken(); 
   
-                // search for the recipient in the connected devices list. 
+                // send to all other users
                 // ar is the vector storing client of active users 
                 for (ClientHandler mc : Server.ar)  
                 { 
                     // if the recipient is found, write on its 
                     // output stream 
-                    if (mc.name.equals(recipient) && mc.isloggedin==true)  
+                    if (!mc.name.equals(this.name) && mc.isloggedin==true)  
                     { 
-                        mc.dos.writeUTF(this.name+" : "+MsgToSend); 
-                        break; 
+                        mc.dos.writeUTF(this.name+" : "+ received); 
                     } 
                 } 
             } catch (IOException e) { 
