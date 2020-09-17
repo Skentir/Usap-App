@@ -28,6 +28,8 @@ public class Client extends JFrame
     
     final static int ServerPort = 1234; 
 
+    private ArrayList<String> log;
+
     public Client() throws IOException {
         pnlContent = new JPanel();
         text = new JTextArea(10,20);
@@ -49,6 +51,8 @@ public class Client extends JFrame
         setSize(250,300);
         setVisible(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        log = new ArrayList<>();
     }
 
     public void connect(String ip, Integer port, String name) throws IOException {
@@ -61,10 +65,12 @@ public class Client extends JFrame
            uname = name;
 
            dos.writeUTF(uname);   
+           log.add(uname + " connecting to the server.");
     }
  
     public void sendMsg() throws IOException {
         // sendMessage thread 
+        String name = this.uname;
         Thread sendMessage = new Thread(new Runnable()  
         { 
             @Override
@@ -77,6 +83,7 @@ public class Client extends JFrame
                     try { 
                         // write on the output stream 
                         dos.writeUTF(msg); 
+                        log.add(name + ": " + msg);
                     } catch (IOException e) { 
                         e.printStackTrace(); 
                     } 
