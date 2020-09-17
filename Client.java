@@ -32,7 +32,7 @@ public class Client extends JFrame
         cardlayout = new CardLayout();
         pnlContent = new JPanel();
         
-        login = new LoginPanel(cardlayout,pnlContent);
+        login = new LoginPanel(cardlayout,pnlContent,this);
         messenger = new MessengerPanel(cardlayout,pnlContent);
 
         pnlContent.setLayout(cardlayout);
@@ -49,15 +49,15 @@ public class Client extends JFrame
         log = new ArrayList<>();
     }
 
-    public void connect(String ip, Integer port, String name) throws IOException {
+    public void connect() throws IOException {
            // establish the connection 
-           s = new Socket(ip, port);
+           s = new Socket(login.getIP(), login.getPort());
              
            // obtaining input and out streams 
            dis = new DataInputStream(s.getInputStream()); 
            dos = new DataOutputStream(s.getOutputStream()); 
-           uname = name;
-
+           uname = login.getName();
+           System.out.println(login.getIP() + " -> " + login.getPort() + " -> " + login.getName());
            dos.writeUTF(uname);   
            log.add(uname + " connecting to the server.");
     }
@@ -125,7 +125,8 @@ public class Client extends JFrame
         //InetAddress ip = InetAddress.getByName("localhost"); 
         
         // establish the connection 
-        client.connect(args[0],Integer.parseInt(args[1]), args[2]);
+        //client.connect(args[0],Integer.parseInt(args[1]), args[2]);
+        client.connect();
         
         // sendMessage thread
         client.sendMsg();
@@ -144,11 +145,11 @@ class LoginPanel extends JPanel implements ActionListener {
 
     CardLayout card;
     JPanel pnl;
-
-    public LoginPanel(CardLayout card, JPanel pnl) {
+    Client cl; 
+    public LoginPanel(CardLayout card, JPanel pnl, Client cl) {
         this.card = card;
         this.pnl = pnl;
-
+        this.cl = cl;
         txtIP = new JTextField(20);
         JLabel lblIP = new JLabel("IP Address");
         txtPort = new JTextField(20);
@@ -169,7 +170,24 @@ class LoginPanel extends JPanel implements ActionListener {
     }
     @Override
     public void actionPerformed (ActionEvent e) {
-        card.next(pnl);
+        try {
+            loginServer();
+            card.next(pnl);
+        } catch(IOException err) {
+            System.out.println("Can't connect!");
+        }
+    }
+    public void loginServer() throws IOException {
+        cl.connect();
+    }
+    public String getIP() {
+        return txtIP.getText();
+    }
+    public Integer getPort() {
+        return Integer.parseInt(txtPort.getText());
+    }
+    public String getName() {
+        return txtName.getText();
     }
 }
 
