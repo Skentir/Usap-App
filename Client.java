@@ -5,6 +5,10 @@ import java.io.*;
 import java.net.*; 
 import java.util.*; 
 import javax.swing.*;
+import java.awt.CardLayout;
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
   
 public class Client extends JFrame 
 { 
@@ -15,59 +19,25 @@ public class Client extends JFrame
 
     //For testing
     private Scanner scn;
-
-    private JTextArea text; 
-    private JTextField txtMsg; 
-    private JTextField txtIP; 
-    private JTextField txtPort; 
-    private JTextField txtName; 
-    private JButton btnEnter; 
-    private JButton btnSend; 
-    private JButton btnLogout;
-    private JLabel lblMsg; 
-    private JPanel pnlContent;
+    final static int ServerPort = 12345; 
     
-    final static int ServerPort = 1234; 
+    private JPanel pnlContent;
+    private CardLayout cardlayout;
+    private LoginPanel login;
+    private MessengerPanel messenger;
 
     private ArrayList<String> log;
 
     public Client() throws IOException {
-       
-        /* Log In Panel */
-        pnlLogin = new JPanel();
-        txtIP = new JTextField(20);
-        JLabel lblIP = new JLabel("IP Address");
-        txtPort = new JTextField(20);
-        JLabel lblPort = new JLabel("Port");
-        txtName = new JTextField(20);
-        JLabel lblName = new JLabel("Name");
-        btnEnter = new JButton("Enter");
-
-        pnlLogin.add(lblIP);
-        pnlLogin.add(txtIP);
-        pnlLogin.add(lblPort);
-        pnlLogin.add(txtPort);
-        pnlLogin.add(lblName);
-        pnlLogin.add(txtName);
-        pnlLogin.add(btnEnter);
-
-        /* Messaging Panel */
+        cardlayout = new CardLayout();
         pnlContent = new JPanel();
-        text = new JTextArea(10,20);
-        text.setEditable(false);
-
-        txtMsg = new JTextField(20);
-        lblMsg = new JLabel("Message");
-        btnSend = new JButton("Send");
-        btnLogout = new JButton("Logout");
-
-        JScrollPane scroll = new JScrollPane(text);
-        pnlContent.add(scroll);
-        pnlContent.add(lblMsg);
-        pnlContent.add(txtMsg);
-        pnlContent.add(btnSend);
-        pnlContent.add(btnLogout);
         
+        login = new LoginPanel(cardlayout,pnlContent);
+        messenger = new MessengerPanel(cardlayout,pnlContent);
+
+        pnlContent.setLayout(cardlayout);
+        pnlContent.add(login, "login");
+        pnlContent.add(messenger,"messenger");
 
         setContentPane(pnlContent);
         setLocationRelativeTo(null);
@@ -165,3 +135,76 @@ public class Client extends JFrame
   
     } 
 } 
+
+class LoginPanel extends JPanel implements ActionListener {
+    JTextField txtIP;
+    JTextField txtPort;
+    JTextField txtName;
+    JButton btnEnter; 
+
+    CardLayout card;
+    JPanel pnl;
+
+    public LoginPanel(CardLayout card, JPanel pnl) {
+        this.card = card;
+        this.pnl = pnl;
+
+        txtIP = new JTextField(20);
+        JLabel lblIP = new JLabel("IP Address");
+        txtPort = new JTextField(20);
+        JLabel lblPort = new JLabel("Port");
+        txtName = new JTextField(20);
+        JLabel lblName = new JLabel("Name");
+        btnEnter = new JButton("Enter");
+        btnEnter.addActionListener (this);
+        
+        add(lblIP);
+        add(txtIP);
+        add(lblPort);
+        add(txtPort);
+        add(lblName);
+        add(txtName);
+        add(btnEnter);
+        setBackground(Color.red);
+    }
+    @Override
+    public void actionPerformed (ActionEvent e) {
+        card.next(pnl);
+    }
+}
+
+class MessengerPanel extends JPanel implements ActionListener {
+    JTextArea text;
+    JTextField txtMsg;
+    JButton btnSend;
+    JButton btnLogout;
+    
+    CardLayout card;
+    JPanel pnl;
+
+    public MessengerPanel(CardLayout card, JPanel pnl) {
+        this.card = card;
+        this.pnl = pnl;
+
+        text = new JTextArea(10,20);
+        text.setEditable(false);
+
+        txtMsg = new JTextField(20);
+        JLabel lblMsg = new JLabel("Message");
+        btnSend = new JButton("Send");
+        btnLogout = new JButton("Logout");
+        btnLogout.addActionListener(this);
+
+        JScrollPane scroll = new JScrollPane(text);
+        add(scroll);
+        add(lblMsg);
+        add(txtMsg);
+        add(btnSend);
+        add(btnLogout);
+        setBackground(Color.blue);
+    }   
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        card.next(pnl);
+    }
+}
