@@ -4,3 +4,5 @@ ServerTest.class
 ClientHandler.class
 Client$1.class
 Client$2.class
+LoginPanel.class
+MessengerPanel.class
