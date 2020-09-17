@@ -1,95 +1,131 @@
-import java.io.*; 
-import java.net.*; 
-import java.util.*; 
+// Java implementation of  Server side 
+// It contains two classes : Server and ClientHandler 
+// Save file as Server.java 
   
+import java.io.*; 
+import java.util.*; 
+import java.net.*; 
   
 // Server class 
-public class Server extends Thread 
+public class Server
 { 
-	private static ArrayList<BufferedWriter> clients;           
-	private static ServerSocket server; 
-	private String nome;
-	private Socket con;
-	private InputStream in;  
-	private InputStreamReader inr;  
-	private BufferedReader bfr; 
-
-    // Constructor
-    public Server(Socket con){
-		this.con = con;
-		try {
-			in  = con.getInputStream();
-			inr = new InputStreamReader(in);
-			bfr = new BufferedReader(inr);
-		} catch (IOException e) {
-			  e.printStackTrace();
-		}                          
-	}       
-
-    // Run - Everytime a client connects, a new thread is allocated
-    public void run() {
-        System.out.println("HHHH");	 
-		try{							
-			String msg;
-			OutputStream ou =  this.con.getOutputStream();
-			Writer ouw = new OutputStreamWriter(ou);
-			BufferedWriter bfw = new BufferedWriter(ouw); 
-			clients.add(bfw);
-			nome = msg = bfr.readLine();
-				  
-			while(!"logout".equalsIgnoreCase(msg) && msg != null)
-			{           
-                msg = bfr.readLine();
-				System.out.println(msg); 
-				sendToAll(bfw, msg);
-				System.out.println(msg);                                              
-			}										 
-		}catch (Exception e) {
-				e.printStackTrace();
-
-		} 
-    }
-
-	// sendToAll - when the server receives a message, it sends it to all other connected clients
-	public void sendToAll(BufferedWriter bwOutput, String msg) throws  IOException 
-	{
-		BufferedWriter bwS;
-
-		System.out.println("senf"); 
-		for(BufferedWriter bw :  clients){
-			bwS = (BufferedWriter)bw;
-			if(!(bwOutput == bwS)){
-				bw.write(nome + " -> " + msg+"\r\n");
-				bw.flush(); 
-			}
-		}          
-	}
-	
-	// main
+  
+    // Vector to store active clients 
+    static Vector<ClientHandler> ar = new Vector<>(); 
+      
+    // counter for clients 
+    static int i = 0; 
+  
     public static void main(String[] args) throws IOException  
     { 
-		try{
-			//Cria os objetos necessário para instânciar o server
-			/*JLabel lblMessage = new JLabel("Server Port:");
-			JTextField txtPort = new JTextField("12345");
-			Object[] texts = {lblMessage, txtPort };  
-			JOptionPane.showMessageDialog(null, texts);*/
-			server = new ServerSocket(Integer.parseInt(args[0]));
-			clients = new ArrayList<BufferedWriter>();
-			//JOptionPane.showMessageDialog(null,"Active Server at Port: "+ txtPort.getText());
-			System.out.println("Server listening at Port " + args[0]);
+        ServerSocket ss = new ServerSocket(Integer.parseInt(args[0])); 
+          
+        Socket s; 
+          
+        // running infinite loop for getting 
+        // client request 
+        while (true)  
+        { 
+            // Accept the incoming request 
+            s = ss.accept(); 
+  
+            System.out.println("New client request received : " + s); 
+              
+            // obtain input and output streams 
+            DataInputStream dis = new DataInputStream(s.getInputStream()); 
+            DataOutputStream dos = new DataOutputStream(s.getOutputStream()); 
+            
+            String tempName = dis.readUTF();
 
-			while(true){
-				System.out.println("Waiting for connection...");
-				Socket con = server.accept();
-				System.out.println("Client connected...");
-				Thread t = new Server(con);
-                t.start();   // starts the thread
-                this.run(); // when a client connects
-			}
-								 
-		}catch (Exception e) {
-			e.printStackTrace();
-		} 
+            System.out.println("Creating a new handler for " + tempName + "..."); 
+            
+            // Create a new handler object for handling this request. 
+            ClientHandler mtch = new ClientHandler(s, tempName, dis, dos); 
+  
+            // Create a new Thread with this object. 
+            Thread t = new Thread(mtch); 
+              
+            System.out.println("Adding this client to active client list"); 
+  
+            // add this client to active clients list 
+            ar.add(mtch); 
+  
+            // start the thread. 
+            t.start(); 
+  
+            // increment i for new client. 
+            // i is used for naming only, and can be replaced 
+            // by any naming scheme 
+            i++; 
+  
+        } 
+    } 
+} 
+  
+// ClientHandler class 
+class ClientHandler implements Runnable  
+{ 
+    Scanner scn = new Scanner(System.in); 
+    private String name; 
+    final DataInputStream dis; 
+    final DataOutputStream dos; 
+    Socket s; 
+    boolean isloggedin; 
+      
+    // constructor 
+    public ClientHandler(Socket s, String name, 
+                            DataInputStream dis, DataOutputStream dos) { 
+        this.dis = dis; 
+        this.dos = dos; 
+        this.name = name; 
+        this.s = s; 
+        this.isloggedin=true; 
+    } 
+  
+    @Override
+    public void run() { 
+  
+        String received; 
+        while (true)  
+        { 
+            try
+            { 
+                // receive the string 
+                received = dis.readUTF(); 
+                  
+                System.out.println(this.name + ":" + received); 
+                  
+                if(received.equals("logout")){ 
+                    this.isloggedin=false; 
+                    this.s.close(); 
+                    break; 
+                } 
+  
+                // send to all other users
+                // ar is the vector storing client of active users 
+                for (ClientHandler mc : Server.ar)  
+                { 
+                    // if the recipient is found, write on its 
+                    // output stream 
+                    if (!mc.name.equals(this.name) && mc.isloggedin==true)  
+                    { 
+                        mc.dos.writeUTF(this.name+" : "+ received); 
+                    } 
+                } 
+            } catch (IOException e) { 
+                  
+                e.printStackTrace(); 
+            } 
+              
+        } 
+        try
+        { 
+            // closing resources 
+            this.dis.close(); 
+            this.dos.close(); 
+              
+        }catch(IOException e){ 
+            e.printStackTrace(); 
+        } 
     } 
 } 

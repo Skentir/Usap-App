@@ -1,56 +1,112 @@
+// Java implementation for multithreaded chat client 
+// Save file as Client.java 
+  
 import java.io.*; 
 import java.net.*; 
 import java.util.*; 
+import javax.swing.*;
   
 public class Client  
 { 
+    private DataInputStream dis;
+    private DataOutputStream dos;
     private Socket s;
-    private OutputStreamWriter dos;
-    private BufferedWriter wr;
-    private String name;
-    // Connect - connect client to a server socket
-    public void connect(String ip, String port, String username) throws IOException {
-        s = new Socket(ip, Integer.parseInt(port));
-        dos = new OutputStreamWriter(s.getOutputStream());
-        wr = new BufferedWriter(dos);
-        name = username;
-        System.out.println("created stuff!");
-        // Name of client
-        wr.write(this.name);
-        wr.flush();
+    private String uname;
+
+    //For testing
+    private Scanner scn;
+
+    private JTextArea text; 
+    private JTextField txtIP; 
+    private JTextField txtPort; 
+    private JTextField txtName; 
+    private JButton btnSend; 
+    private JButton btnLogout; 
+    private JLabel lblHistorico; 
+    private JLabel lblMsg; 
+    private JPanel pnlContent;
+    
+    final static int ServerPort = 1234; 
+
+    public void connect(String ip, Integer port, String name) throws IOException {
+           // establish the connection 
+           s = new Socket(ip, port);
+             
+           // obtaining input and out streams 
+           dis = new DataInputStream(s.getInputStream()); 
+           dos = new DataOutputStream(s.getOutputStream()); 
+           uname = name;
+
+           dos.writeUTF(uname);   
     }
 
-    public void sendMsg(String msg) throws IOException {
-        if (msg.equals("logout")) {
-            wr.write("Disconnected");
-        } else {
-            wr.write(this.name + " : " + msg);
-        }
-        wr.flush();
+    public void sendMsg() {
+        // sendMessage thread 
+        Thread sendMessage = new Thread(new Runnable()  
+        { 
+            @Override
+            public void run() { 
+                while (true) { 
+  
+                    // read the message to deliver. 
+                    String msg = scn.nextLine(); 
+                      
+                    try { 
+                        // write on the output stream 
+                        dos.writeUTF(msg); 
+                    } catch (IOException e) { 
+                        e.printStackTrace(); 
+                    } 
+                } 
+            } 
+        }); 
+
+        sendMessage.start(); 
     }
 
-    public void listen() throws IOException {
-        System.out.println("Here 2");
-        InputStreamReader dis = new InputStreamReader(s.getInputStream());
-        BufferedReader br = new BufferedReader(dis);
-
-        String msg = "";
-        while (msg != "logout")  {
-            if(br.ready())
-                msg = br.readLine();
-        }
+    public void listen() {
+        Thread readMessage = new Thread(new Runnable()  
+        { 
+            @Override
+            public void run() { 
+  
+                while (true) { 
+                    try { 
+                        // read the message sent to this client 
+                        String msg = dis.readUTF(); 
+                        System.out.println(msg); 
+                    } catch (IOException e) { 
+  
+                        e.printStackTrace(); 
+                    } 
+                } 
+            } 
+        }); 
+        readMessage.start(); 
     }
-
-    public static void main(String []args) throws IOException { 
-        Client app = new Client(); 
-        app.connect(args[0], args[1], args[2]); 
-
-        System.out.println("Enter a message: ");
-        Scanner obj = new Scanner(System.in);
-        String word = obj.nextLine();
-        app.sendMsg(word);
+  
+    public static void main(String args[]) throws UnknownHostException, IOException  
+    { 
         
-        app.listen(); 
-    }
+        /*txtIP = new JTextField("127.0.0.1"); 
+        txtPort = new JTextField("12345"); 
+        txtName = new JTextField("hayabusa");
 
+        pnlContent = new JPanel(); */
+
+        scn = new Scanner(System.in); 
+          
+        // getting localhost ip 
+        //InetAddress ip = InetAddress.getByName("localhost"); 
+          
+        // establish the connection 
+        this.connect(args[0],Integer.parseInt(args[1]), args[2]);
+        
+        // sendMessage thread
+        this.sendMsg();
+          
+        // readMessage thread 
+        this.listen();
+  
+    } 
 } 
