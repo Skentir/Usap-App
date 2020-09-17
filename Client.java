@@ -21,6 +21,7 @@ public class Client extends JFrame
     private JTextField txtIP; 
     private JTextField txtPort; 
     private JTextField txtName; 
+    private JButton btnEnter; 
     private JButton btnSend; 
     private JButton btnLogout;
     private JLabel lblMsg; 
@@ -29,6 +30,26 @@ public class Client extends JFrame
     final static int ServerPort = 1234; 
 
     public Client() throws IOException {
+       
+        /* Log In Panel */
+        pnlLogin = new JPanel();
+        txtIP = new JTextField(20);
+        JLabel lblIP = new JLabel("IP Address");
+        txtPort = new JTextField(20);
+        JLabel lblPort = new JLabel("Port");
+        txtName = new JTextField(20);
+        JLabel lblName = new JLabel("Name");
+        btnEnter = new JButton("Enter");
+
+        pnlLogin.add(lblIP);
+        pnlLogin.add(txtIP);
+        pnlLogin.add(lblPort);
+        pnlLogin.add(txtPort);
+        pnlLogin.add(lblName);
+        pnlLogin.add(txtName);
+        pnlLogin.add(btnEnter);
+
+        /* Messaging Panel */
         pnlContent = new JPanel();
         text = new JTextArea(10,20);
         text.setEditable(false);
@@ -36,12 +57,15 @@ public class Client extends JFrame
         txtMsg = new JTextField(20);
         lblMsg = new JLabel("Message");
         btnSend = new JButton("Send");
+        btnLogout = new JButton("Logout");
 
         JScrollPane scroll = new JScrollPane(text);
         pnlContent.add(scroll);
         pnlContent.add(lblMsg);
         pnlContent.add(txtMsg);
         pnlContent.add(btnSend);
+        pnlContent.add(btnLogout);
+        
 
         setContentPane(pnlContent);
         setLocationRelativeTo(null);
