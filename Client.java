@@ -28,6 +28,11 @@ public class Client
     
     final static int ServerPort = 1234; 
 
+    public Client() throws IOException {
+        pnlContent = new JPanel();
+        text = new JTextArea(10,20);
+    }
+
     public void connect(String ip, Integer port, String name) throws IOException {
            // establish the connection 
            s = new Socket(ip, port);
@@ -85,7 +90,7 @@ public class Client
         readMessage.start(); 
     }
   
-    public static void main(String args[]) throws UnknownHostException, IOException  
+    public static void main(String args[]) throws IOException
     { 
         
         /*txtIP = new JTextField("127.0.0.1"); 
