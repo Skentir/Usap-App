@@ -12,7 +12,10 @@ public class Server
   
     // Vector to store active clients 
     static Vector<ClientHandler> ar = new Vector<>(); 
-      
+    
+    // ArrayList for log
+    static ArrayList<String> log = new ArrayList<>();
+
     // counter for clients 
     static int i = 0; 
   
@@ -21,7 +24,10 @@ public class Server
         ServerSocket ss = new ServerSocket(Integer.parseInt(args[0])); 
           
         Socket s; 
-          
+        
+        System.out.println("Server started! Listening at port " + args[0]);
+        log.add("Server started. Port " + args[0]);
+
         // running infinite loop for getting 
         // client request 
         while (true)  
@@ -40,7 +46,7 @@ public class Server
             System.out.println("Creating a new handler for " + tempName + "..."); 
             
             // Create a new handler object for handling this request. 
-            ClientHandler mtch = new ClientHandler(s, tempName, dis, dos); 
+            ClientHandler mtch = new ClientHandler(s, tempName, dis, dos, log); 
   
             // Create a new Thread with this object. 
             Thread t = new Thread(mtch); 
@@ -49,7 +55,9 @@ public class Server
   
             // add this client to active clients list 
             ar.add(mtch); 
-  
+            
+            log.add("User " + tempName + " connected.");
+
             // start the thread. 
             t.start(); 
   
@@ -71,15 +79,17 @@ class ClientHandler implements Runnable
     final DataOutputStream dos; 
     Socket s; 
     boolean isloggedin; 
-      
+    ArrayList<String> log;
+
     // constructor 
     public ClientHandler(Socket s, String name, 
-                            DataInputStream dis, DataOutputStream dos) { 
+                            DataInputStream dis, DataOutputStream dos, ArrayList<String> log) { 
         this.dis = dis; 
         this.dos = dos; 
         this.name = name; 
         this.s = s; 
         this.isloggedin=true; 
+        this.log = log;
     } 
   
     @Override
@@ -98,9 +108,13 @@ class ClientHandler implements Runnable
                 if(received.equals("logout")){ 
                     this.isloggedin=false; 
                     this.s.close(); 
+                    System.out.println("Client disconnecting!");
+                    log.add(this.name + " disconnected from the server.");
                     break; 
                 } 
-  
+                
+                log.add(this.name + ": " + received);
+
                 // send to all other users
                 // ar is the vector storing client of active users 
                 for (ClientHandler mc : Server.ar)  
