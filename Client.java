@@ -124,10 +124,6 @@ public class Client extends JFrame
         // getting localhost ip 
         //InetAddress ip = InetAddress.getByName("localhost"); 
         
-        // establish the connection 
-        //client.connect(args[0],Integer.parseInt(args[1]), args[2]);
-        client.connect();
-        
         // sendMessage thread
         client.sendMsg();
           
@@ -171,6 +167,7 @@ class LoginPanel extends JPanel implements ActionListener {
     @Override
     public void actionPerformed (ActionEvent e) {
         try {
+            // establish the connection given the credentials
             loginServer();
             card.next(pnl);
         } catch(IOException err) {
