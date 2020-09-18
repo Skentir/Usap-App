@@ -63,23 +63,27 @@ public class Client extends JFrame
  
     public void sendMsg() throws IOException {
         // sendMessage thread 
-        String name = this.uname;
         Thread sendMessage = new Thread(new Runnable()  
         { 
             @Override
             public void run() { 
                 while (true) { 
   
-                    // read the message to deliver. 
-                    String msg = scn.nextLine(); 
-                      
-                    try { 
-                        // write on the output stream 
-                        dos.writeUTF(msg); 
-                        log.add(name + ": " + msg);
-                    } catch (IOException e) { 
-                        e.printStackTrace(); 
-                    } 
+                    //String msg = scn.nextLine(); 
+                    messenger.btnSend.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            try { 
+                                 // read the message to deliver. 
+                                String msg = messenger.getMessage();
+                                // write on the output stream 
+                                dos.writeUTF(msg); 
+                                log.add(uname + ": " + msg);
+                            } catch (IOException err) { 
+                                err.printStackTrace(); 
+                            } 
+                        }
+                    });                   
                 } 
             } 
         }); 
@@ -116,21 +120,15 @@ public class Client extends JFrame
   
     public static void main(String args[]) throws IOException
     { 
-        
-        /*txtIP = new JTextField("127.0.0.1"); 
-        txtPort = new JTextField("12345"); 
-        txtName = new JTextField("hayabusa");
-
-        pnlContent = new JPanel(); */
-
+       
         Client client = new Client();
-        Scanner scn = new Scanner(System.in);
-        client.scn = scn; 
+        //Scanner scn = new Scanner(System.in);
+       // client.scn = scn; 
         // getting localhost ip 
         //InetAddress ip = InetAddress.getByName("localhost"); 
         
         // sendMessage thread
-        client.sendMsg();
+        //client.sendMsg();
           
         // readMessage thread 
         client.listen();
@@ -175,12 +173,16 @@ class LoginPanel extends JPanel implements ActionListener {
             // establish the connection given the credentials
             loginServer();
             card.next(pnl);
+            startThread();
         } catch(IOException err) {
             System.out.println("Can't connect!");
         }
     }
     public void loginServer() throws IOException {
         cl.connect();
+    }
+    public void startThread() throws IOException {
+        cl.sendMsg();
     }
     public String getIP() {
         return txtIP.getText();
@@ -236,5 +238,8 @@ class MessengerPanel extends JPanel implements ActionListener {
     }
     public void exit() throws IOException {
         cl.terminate();
+    }
+    public String getMessage() {
+        return txtMsg.getText();
     }
 }
