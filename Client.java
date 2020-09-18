@@ -68,7 +68,6 @@ public class Client extends JFrame
             @Override
             public void run() { 
                 while (true) { 
-  
                     //String msg = scn.nextLine(); 
                     messenger.btnSend.addActionListener(new ActionListener() {
                         @Override
@@ -102,8 +101,8 @@ public class Client extends JFrame
                         // read the message sent to this client 
                         String msg = dis.readUTF(); 
                         System.out.println(msg); 
+                        login.scroll.addText(msg);
                     } catch (IOException e) { 
-  
                         e.printStackTrace(); 
                     } 
                 } 
@@ -131,7 +130,7 @@ public class Client extends JFrame
         //client.sendMsg();
           
         // readMessage thread 
-        client.listen();
+        //client.listen();
   
     } 
 } 
@@ -183,6 +182,7 @@ class LoginPanel extends JPanel implements ActionListener {
     }
     public void startThread() throws IOException {
         cl.sendMsg();
+        cl.listen();
     }
     public String getIP() {
         return txtIP.getText();
@@ -200,7 +200,8 @@ class MessengerPanel extends JPanel implements ActionListener {
     JTextField txtMsg;
     JButton btnSend;
     JButton btnLogout;
-    
+    JScrollPane scroll;
+
     CardLayout card;
     JPanel pnl;
     Client cl;
@@ -219,7 +220,7 @@ class MessengerPanel extends JPanel implements ActionListener {
         btnLogout = new JButton("Logout");
         btnLogout.addActionListener(this);
 
-        JScrollPane scroll = new JScrollPane(text);
+        scroll = new JScrollPane(text);
         add(scroll);
         add(lblMsg);
         add(txtMsg);
