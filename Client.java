@@ -122,6 +122,10 @@ public class Client extends JFrame
         } else
             terminate();
     }
+
+    public String getName() {
+        return this.uname;
+    }
   
     public static void main(String args[]) throws IOException
     { 
@@ -225,6 +229,7 @@ class MessengerPanel extends JPanel implements ActionListener {
         text.setEditable(false);
 
         txtMsg = new JTextField(20);
+        JLabel lblName = new JLabel(cl.getName());
         JLabel lblMsg = new JLabel("Message");
         btnSend = new JButton("Send");
         btnLogout = new JButton("Logout");
@@ -245,6 +250,7 @@ class MessengerPanel extends JPanel implements ActionListener {
         btnLogout.addActionListener(this);
 
         scroll = new JScrollPane(text);
+        add(lblName);
         add(scroll);
         add(lblMsg);
         add(txtMsg);
