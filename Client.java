@@ -62,32 +62,28 @@ public class Client extends JFrame
     }
  
     public void sendMsg() throws IOException {
-        // sendMessage thread 
+       
+       /* // sendMessage thread 
         Thread sendMessage = new Thread(new Runnable()  
         { 
             @Override
             public void run() { 
-                while (true) { 
-                    //String msg = scn.nextLine(); 
-                    messenger.btnSend.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            try { 
-                                 // read the message to deliver. 
-                                String msg = messenger.getMessage();
-                                // write on the output stream 
-                                dos.writeUTF(msg); 
-                                log.add(uname + ": " + msg);
-                            } catch (IOException err) { 
-                                err.printStackTrace(); 
-                            } 
-                        }
-                    });                   
+                while (messenger.getMessage() != null ) {   
+                    try { 
+                        System.out.println("Clickedd");
+                            // read the message to deliver. 
+                        String msg = messenger.getMessage();
+                        // write on the output stream 
+                        dos.writeUTF(msg); 
+                        log.add(uname + ": " + msg);
+                    } catch (IOException err) { 
+                        err.printStackTrace(); 
+                    }               
                 } 
             } 
-        }); 
+        }); */
 
-        sendMessage.start(); 
+        //sendMessage.start(); 
     }
 
     public void listen() throws IOException {
@@ -101,7 +97,7 @@ public class Client extends JFrame
                         // read the message sent to this client 
                         String msg = dis.readUTF(); 
                         System.out.println(msg); 
-                        login.scroll.addText(msg);
+                        messenger.text.append(msg);
                     } catch (IOException e) { 
                         e.printStackTrace(); 
                     } 
@@ -115,6 +111,16 @@ public class Client extends JFrame
         dis.close();
         dos.close();
         s.close();
+    }
+
+    public void send(String message) throws IOException {
+        if(message != "logout") {
+            System.out.println("Sending ...");
+            dos.writeUTF(message); 
+            messenger.text.append(this.uname+" : "+message + "\n");
+            log.add(this.uname + ": " + message);
+        } else
+            terminate();
     }
   
     public static void main(String args[]) throws IOException
@@ -181,7 +187,7 @@ class LoginPanel extends JPanel implements ActionListener {
         cl.connect();
     }
     public void startThread() throws IOException {
-        cl.sendMsg();
+      //  cl.sendMsg();
         cl.listen();
     }
     public String getIP() {
@@ -218,6 +224,20 @@ class MessengerPanel extends JPanel implements ActionListener {
         JLabel lblMsg = new JLabel("Message");
         btnSend = new JButton("Send");
         btnLogout = new JButton("Logout");
+
+        btnSend.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try { 
+                     // read the message to deliver. 
+                    String msg = txtMsg.getText();
+                    cl.send(msg);
+                } catch (IOException err) { 
+                    err.printStackTrace(); 
+                } 
+            }
+        });
+
         btnLogout.addActionListener(this);
 
         scroll = new JScrollPane(text);
