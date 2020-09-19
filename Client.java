@@ -178,6 +178,10 @@ class LoginPanel extends JPanel implements ActionListener {
             // establish the connection given the credentials
             loginServer();
             card.next(pnl);
+            // clear text fields
+            txtIP.setText(null);
+            txtPort.setText(null);
+            txtName.setText(null);
             startThread();
         } catch(IOException err) {
             System.out.println("Can't connect!");
@@ -259,6 +263,8 @@ class MessengerPanel extends JPanel implements ActionListener {
     }
     public void exit() throws IOException {
         cl.terminate();
+        text.setText(null);
+        txtMsg.setText(null);
     }
     public String getMessage() {
         return txtMsg.getText();
