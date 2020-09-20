@@ -106,6 +106,15 @@ class ClientHandler implements Runnable
                 System.out.println(this.name + ":" + received); 
                   
                 if(received.equals("logout")){ 
+                    for (ClientHandler mc : Server.ar)  
+                    { 
+                        // if the recipient is found, write on its 
+                        // output stream 
+                        if (!mc.name.equals(this.name) && mc.isloggedin==true)  
+                        { 
+                            mc.dos.writeUTF(this.name + " has disconnected.\n"); 
+                        } 
+                    } 
                     this.isloggedin=false; 
                     this.s.close(); 
                     System.out.println("Client disconnecting!");
@@ -123,7 +132,7 @@ class ClientHandler implements Runnable
                     // output stream 
                     if (!mc.name.equals(this.name) && mc.isloggedin==true)  
                     { 
-                        mc.dos.writeUTF(this.name+" : "+ received); 
+                        mc.dos.writeUTF(this.name+" : "+ received+"\n"); 
                     } 
                 } 
             } catch (IOException e) { 

@@ -108,6 +108,7 @@ public class Client extends JFrame
     }
 
     public void terminate() throws IOException {
+        dos.writeUTF("logout"); 
         dis.close();
         dos.close();
         s.close();
@@ -118,13 +119,13 @@ public class Client extends JFrame
             System.out.println("Sending ...");
             dos.writeUTF(message); 
             messenger.text.append(this.uname+" : "+message + "\n");
-            log.add(this.uname + ": " + message);
+            log.add(this.uname + ": " + message + "\n");
         } else
-            terminate();
+            messenger.exit();
     }
 
-    public String getName() {
-        return this.uname;
+    public void setName() {
+        messenger.lblName.setText(login.getName());
     }
   
     public static void main(String args[]) throws IOException
@@ -181,6 +182,7 @@ class LoginPanel extends JPanel implements ActionListener {
         try {
             // establish the connection given the credentials
             loginServer();
+            cl.setName();
             card.next(pnl);
             // clear text fields
             txtIP.setText(null);
@@ -210,6 +212,7 @@ class LoginPanel extends JPanel implements ActionListener {
 }
 
 class MessengerPanel extends JPanel implements ActionListener {
+    JLabel lblName;
     JTextArea text;
     JTextField txtMsg;
     JButton btnSend;
@@ -229,7 +232,7 @@ class MessengerPanel extends JPanel implements ActionListener {
         text.setEditable(false);
 
         txtMsg = new JTextField(20);
-        JLabel lblName = new JLabel(cl.getName());
+        lblName = new JLabel();
         JLabel lblMsg = new JLabel("Message");
         btnSend = new JButton("Send");
         btnLogout = new JButton("Logout");
