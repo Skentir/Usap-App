@@ -3,47 +3,90 @@
   
 import java.io.*; 
 import java.net.*; 
-import java.util.Scanner; 
+import java.util.*; 
+import javax.swing.*;
+import java.awt.CardLayout;
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
   
-public class Client 
+public class Client extends JFrame 
 { 
-    final static int ServerPort = 1234; 
-  
-    public static void main(String args[]) throws UnknownHostException, IOException  
-    { 
-        Scanner scn = new Scanner(System.in); 
-          
-        // getting localhost ip 
-        //InetAddress ip = InetAddress.getByName("localhost"); 
-          
-        // establish the connection 
-        Socket s = new Socket(args[0], Integer.parseInt(args[1])); 
-          
-        // obtaining input and out streams 
-        DataInputStream dis = new DataInputStream(s.getInputStream()); 
-        DataOutputStream dos = new DataOutputStream(s.getOutputStream()); 
-  
-        // sendMessage thread 
+    private DataInputStream dis;
+    private DataOutputStream dos;
+    private Socket s;
+    private String uname;
+
+    //For testing
+    private Scanner scn;
+    
+    private JPanel pnlContent;
+    private CardLayout cardlayout;
+    private LoginPanel login;
+    private MessengerPanel messenger;
+
+    private ArrayList<String> log;
+
+    public Client() throws IOException {
+        cardlayout = new CardLayout();
+        pnlContent = new JPanel();
+        
+        login = new LoginPanel(cardlayout,pnlContent,this);
+        messenger = new MessengerPanel(cardlayout,pnlContent,this);
+
+        pnlContent.setLayout(cardlayout);
+        pnlContent.add(login, "login");
+        pnlContent.add(messenger,"messenger");
+
+        setContentPane(pnlContent);
+        setLocationRelativeTo(null);
+        setResizable(false);
+        setSize(250,300);
+        setVisible(true);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        log = new ArrayList<>();
+    }
+
+    public void connect() throws IOException {
+           // establish the connection 
+           s = new Socket(login.getIP(), login.getPort());
+             
+           // obtaining input and out streams 
+           dis = new DataInputStream(s.getInputStream()); 
+           dos = new DataOutputStream(s.getOutputStream()); 
+           uname = login.getName();
+           System.out.println(login.getIP() + " -> " + login.getPort() + " -> " + login.getName());
+           dos.writeUTF(uname);   
+           log.add(uname + " connecting to the server.");
+    }
+ 
+    public void sendMsg() throws IOException {
+       
+       /* // sendMessage thread 
         Thread sendMessage = new Thread(new Runnable()  
         { 
             @Override
             public void run() { 
-                while (true) { 
-  
-                    // read the message to deliver. 
-                    String msg = scn.nextLine(); 
-                      
+                while (messenger.getMessage() != null ) {   
                     try { 
+                        System.out.println("Clickedd");
+                            // read the message to deliver. 
+                        String msg = messenger.getMessage();
                         // write on the output stream 
                         dos.writeUTF(msg); 
-                    } catch (IOException e) { 
-                        e.printStackTrace(); 
-                    } 
+                        log.add(uname + ": " + msg);
+                    } catch (IOException err) { 
+                        err.printStackTrace(); 
+                    }               
                 } 
             } 
-        }); 
-          
-        // readMessage thread 
+        }); */
+
+        //sendMessage.start(); 
+    }
+
+    public void listen() throws IOException {
         Thread readMessage = new Thread(new Runnable()  
         { 
             @Override
@@ -54,16 +97,185 @@ public class Client
                         // read the message sent to this client 
                         String msg = dis.readUTF(); 
                         System.out.println(msg); 
+                        messenger.text.append(msg);
                     } catch (IOException e) { 
-  
                         e.printStackTrace(); 
                     } 
                 } 
             } 
         }); 
-  
-        sendMessage.start(); 
         readMessage.start(); 
+    }
+
+    public void terminate() throws IOException {
+        dos.writeUTF("logout"); 
+        dis.close();
+        dos.close();
+        s.close();
+    }
+
+    public void send(String message) throws IOException {
+        if(message != "logout") {
+            System.out.println("Sending ...");
+            dos.writeUTF(message); 
+            messenger.text.append(this.uname+" : "+message + "\n");
+            log.add(this.uname + ": " + message + "\n");
+        } else
+            messenger.exit();
+    }
+
+    public void setName() {
+        messenger.lblName.setText(login.getName());
+    }
+  
+    public static void main(String args[]) throws IOException
+    { 
+       
+        Client client = new Client();
+        //Scanner scn = new Scanner(System.in);
+       // client.scn = scn; 
+        // getting localhost ip 
+        //InetAddress ip = InetAddress.getByName("localhost"); 
+        
+        // sendMessage thread
+        //client.sendMsg();
+          
+        // readMessage thread 
+        //client.listen();
   
     } 
 } 
+
+class LoginPanel extends JPanel implements ActionListener {
+    JTextField txtIP;
+    JTextField txtPort;
+    JTextField txtName;
+    JButton btnEnter; 
+
+    CardLayout card;
+    JPanel pnl;
+    Client cl; 
+    public LoginPanel(CardLayout card, JPanel pnl, Client cl) {
+        this.card = card;
+        this.pnl = pnl;
+        this.cl = cl;
+        txtIP = new JTextField(20);
+        JLabel lblIP = new JLabel("IP Address");
+        txtPort = new JTextField(20);
+        JLabel lblPort = new JLabel("Port");
+        txtName = new JTextField(20);
+        JLabel lblName = new JLabel("Name");
+        btnEnter = new JButton("Enter");
+        btnEnter.addActionListener (this);
+        
+        add(lblIP);
+        add(txtIP);
+        add(lblPort);
+        add(txtPort);
+        add(lblName);
+        add(txtName);
+        add(btnEnter);
+        setBackground(Color.red);
+    }
+    @Override
+    public void actionPerformed (ActionEvent e) {
+        try {
+            // establish the connection given the credentials
+            loginServer();
+            cl.setName();
+            card.next(pnl);
+            // clear text fields
+            txtIP.setText(null);
+            txtPort.setText(null);
+            txtName.setText(null);
+            startThread();
+        } catch(IOException err) {
+            System.out.println("Can't connect!");
+        }
+    }
+    public void loginServer() throws IOException {
+        cl.connect();
+    }
+    public void startThread() throws IOException {
+      //  cl.sendMsg();
+        cl.listen();
+    }
+    public String getIP() {
+        return txtIP.getText();
+    }
+    public Integer getPort() {
+        return Integer.parseInt(txtPort.getText());
+    }
+    public String getName() {
+        return txtName.getText();
+    }
+}
+
+class MessengerPanel extends JPanel implements ActionListener {
+    JLabel lblName;
+    JTextArea text;
+    JTextField txtMsg;
+    JButton btnSend;
+    JButton btnLogout;
+    JScrollPane scroll;
+
+    CardLayout card;
+    JPanel pnl;
+    Client cl;
+
+    public MessengerPanel(CardLayout card, JPanel pnl, Client cl) {
+        this.card = card;
+        this.pnl = pnl;
+        this.cl = cl;
+
+        text = new JTextArea(10,20);
+        text.setEditable(false);
+
+        txtMsg = new JTextField(20);
+        lblName = new JLabel();
+        JLabel lblMsg = new JLabel("Message");
+        btnSend = new JButton("Send");
+        btnLogout = new JButton("Logout");
+
+        btnSend.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try { 
+                     // read the message to deliver. 
+                    String msg = txtMsg.getText();
+                    cl.send(msg);
+                } catch (IOException err) { 
+                    err.printStackTrace(); 
+                } 
+            }
+        });
+
+        btnLogout.addActionListener(this);
+
+        scroll = new JScrollPane(text);
+        add(lblName);
+        add(scroll);
+        add(lblMsg);
+        add(txtMsg);
+        add(btnSend);
+        add(btnLogout);
+        setBackground(Color.blue);
+    }   
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        try {
+            exit();
+            card.next(pnl);
+        } catch (IOException err) {
+            System.out.println("Cannot exit!");
+        }
+    }
+    public void exit() throws IOException {
+        cl.terminate();
+        text.setText(null);
+        txtMsg.setText(null);
+    }
+    public String getMessage() {
+        return txtMsg.getText();
+    }
+}

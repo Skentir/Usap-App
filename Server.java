@@ -12,17 +12,22 @@ public class Server
   
     // Vector to store active clients 
     static Vector<ClientHandler> ar = new Vector<>(); 
-      
+    
+    // ArrayList for log
+    static ArrayList<String> log = new ArrayList<>();
+
     // counter for clients 
     static int i = 0; 
   
     public static void main(String[] args) throws IOException  
     { 
-        // server is listening on port 1234 
         ServerSocket ss = new ServerSocket(Integer.parseInt(args[0])); 
           
         Socket s; 
-          
+        
+        System.out.println("Server started! Listening at port " + args[0]);
+        log.add("Server started. Port " + args[0]);
+
         // running infinite loop for getting 
         // client request 
         while (true)  
@@ -35,11 +40,13 @@ public class Server
             // obtain input and output streams 
             DataInputStream dis = new DataInputStream(s.getInputStream()); 
             DataOutputStream dos = new DataOutputStream(s.getOutputStream()); 
-              
-            System.out.println("Creating a new handler for this client..."); 
-  
+            
+            String tempName = dis.readUTF();
+
+            System.out.println("Creating a new handler for " + tempName + "..."); 
+            
             // Create a new handler object for handling this request. 
-            ClientHandler mtch = new ClientHandler(s,"client " + i, dis, dos); 
+            ClientHandler mtch = new ClientHandler(s, tempName, dis, dos, log); 
   
             // Create a new Thread with this object. 
             Thread t = new Thread(mtch); 
@@ -48,7 +55,9 @@ public class Server
   
             // add this client to active clients list 
             ar.add(mtch); 
-  
+            
+            log.add("User " + tempName + " connected.");
+
             // start the thread. 
             t.start(); 
   
@@ -70,15 +79,17 @@ class ClientHandler implements Runnable
     final DataOutputStream dos; 
     Socket s; 
     boolean isloggedin; 
-      
+    ArrayList<String> log;
+
     // constructor 
     public ClientHandler(Socket s, String name, 
-                            DataInputStream dis, DataOutputStream dos) { 
+                            DataInputStream dis, DataOutputStream dos, ArrayList<String> log) { 
         this.dis = dis; 
         this.dos = dos; 
         this.name = name; 
         this.s = s; 
         this.isloggedin=true; 
+        this.log = log;
     } 
   
     @Override
@@ -92,29 +103,36 @@ class ClientHandler implements Runnable
                 // receive the string 
                 received = dis.readUTF(); 
                   
-                System.out.println(received); 
+                System.out.println(this.name + ":" + received); 
                   
                 if(received.equals("logout")){ 
+                    for (ClientHandler mc : Server.ar)  
+                    { 
+                        // if the recipient is found, write on its 
+                        // output stream 
+                        if (!mc.name.equals(this.name) && mc.isloggedin==true)  
+                        { 
+                            mc.dos.writeUTF(this.name + " has disconnected.\n"); 
+                        } 
+                    } 
                     this.isloggedin=false; 
                     this.s.close(); 
+                    System.out.println("Client disconnecting!");
+                    log.add(this.name + " disconnected from the server.");
                     break; 
                 } 
-                  
-                // break the string into message and recipient part 
-                StringTokenizer st = new StringTokenizer(received, "#"); 
-                String MsgToSend = st.nextToken(); 
-                String recipient = st.nextToken(); 
-  
-                // search for the recipient in the connected devices list. 
+                
+                log.add(this.name + ": " + received);
+
+                // send to all other users
                 // ar is the vector storing client of active users 
                 for (ClientHandler mc : Server.ar)  
                 { 
                     // if the recipient is found, write on its 
                     // output stream 
-                    if (mc.name.equals(recipient) && mc.isloggedin==true)  
+                    if (!mc.name.equals(this.name) && mc.isloggedin==true)  
                     { 
-                        mc.dos.writeUTF(this.name+" : "+MsgToSend); 
-                        break; 
+                        mc.dos.writeUTF(this.name+" : "+ received+"\n"); 
                     } 
                 } 
             } catch (IOException e) { 
