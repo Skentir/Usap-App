@@ -5,6 +5,8 @@
 import java.io.*; 
 import java.util.*; 
 import java.net.*; 
+import java.time.*; 
+import java.time.format.DateTimeFormatter; 
   
 // Server class 
 public class Server
@@ -25,8 +27,8 @@ public class Server
           
         Socket s; 
         
-        System.out.println("Server started! Listening at port " + args[0]);
-        log.add("Server started. Port " + args[0]);
+        System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Server started! Listening at port " + args[0]);
+        log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Server started. Port " + args[0]);
 
         // running infinite loop for getting 
         // client request 
@@ -51,12 +53,12 @@ public class Server
             // Create a new Thread with this object. 
             Thread t = new Thread(mtch); 
               
-            System.out.println("Adding this client to active client list"); 
+            System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Adding " + tempName + " to active client list"); 
   
             // add this client to active clients list 
             ar.add(mtch); 
             
-            log.add("User " + tempName + " connected.");
+            log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "User " + tempName + " connected.");
 
             // start the thread. 
             t.start(); 
@@ -94,7 +96,22 @@ class ClientHandler implements Runnable
   
     @Override
     public void run() { 
-  
+        
+        try
+        {
+            for (ClientHandler mc : Server.ar)  
+            { 
+                // if the recipient is found, write on its 
+                // output stream 
+                if (!mc.name.equals(this.name) && mc.isloggedin==true)  
+                { 
+                    mc.dos.writeUTF(this.name + " has connected.\n"); 
+                } 
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
         String received; 
         while (true)  
         { 
@@ -103,9 +120,7 @@ class ClientHandler implements Runnable
                 // receive the string 
                 received = dis.readUTF(); 
                   
-                System.out.println(this.name + ":" + received); 
-                  
-                if(received.equals("logout")){ 
+                if(received.equals("#logout")){ 
                     for (ClientHandler mc : Server.ar)  
                     { 
                         // if the recipient is found, write on its 
@@ -117,11 +132,11 @@ class ClientHandler implements Runnable
                     } 
                     this.isloggedin=false; 
                     this.s.close(); 
-                    System.out.println("Client disconnecting!");
-                    log.add(this.name + " disconnected from the server.");
+                    System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Client " + this.name + " disconnecting!");
+                    log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + this.name + " disconnected from the server.");
                     break; 
                 } 
-                
+                System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + this.name + ":" + received); 
                 log.add(this.name + ": " + received);
 
                 // send to all other users

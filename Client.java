@@ -9,6 +9,8 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.time.*; 
+import java.time.format.DateTimeFormatter; 
   
 public class Client extends JFrame 
 { 
@@ -56,34 +58,9 @@ public class Client extends JFrame
            dis = new DataInputStream(s.getInputStream()); 
            dos = new DataOutputStream(s.getOutputStream()); 
            uname = login.getName();
-           System.out.println(login.getIP() + " -> " + login.getPort() + " -> " + login.getName());
+           System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + login.getIP() + " -> " + login.getPort() + " -> " + login.getName());
            dos.writeUTF(uname);   
-           log.add(uname + " connecting to the server.");
-    }
- 
-    public void sendMsg() throws IOException {
-       
-       /* // sendMessage thread 
-        Thread sendMessage = new Thread(new Runnable()  
-        { 
-            @Override
-            public void run() { 
-                while (messenger.getMessage() != null ) {   
-                    try { 
-                        System.out.println("Clickedd");
-                            // read the message to deliver. 
-                        String msg = messenger.getMessage();
-                        // write on the output stream 
-                        dos.writeUTF(msg); 
-                        log.add(uname + ": " + msg);
-                    } catch (IOException err) { 
-                        err.printStackTrace(); 
-                    }               
-                } 
-            } 
-        }); */
-
-        //sendMessage.start(); 
+           log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + uname + " connecting to the server.");
     }
 
     public void listen() throws IOException {
@@ -96,8 +73,9 @@ public class Client extends JFrame
                     try { 
                         // read the message sent to this client 
                         String msg = dis.readUTF(); 
-                        System.out.println(msg); 
-                        messenger.text.append(msg);
+                        System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + msg); 
+                        messenger.text.append("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + msg);
+                        log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + msg);
                     } catch (IOException e) { 
                         e.printStackTrace(); 
                     } 
@@ -108,18 +86,18 @@ public class Client extends JFrame
     }
 
     public void terminate() throws IOException {
-        dos.writeUTF("logout"); 
+        dos.writeUTF("#logout"); 
         dis.close();
         dos.close();
         s.close();
     }
 
     public void send(String message) throws IOException {
-        if(message != "logout") {
-            System.out.println("Sending ...");
+        if(message != "#logout") {
+            System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + this.uname + ": " + message + "\n");
             dos.writeUTF(message); 
-            messenger.text.append(this.uname+" : "+message + "\n");
-            log.add(this.uname + ": " + message + "\n");
+            messenger.text.append("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + this.uname + ": " + message + "\n");
+            log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + this.uname + ": " + message + "\n");
         } else
             messenger.exit();
     }
@@ -243,7 +221,10 @@ class MessengerPanel extends JPanel implements ActionListener {
                 try { 
                      // read the message to deliver. 
                     String msg = txtMsg.getText();
-                    cl.send(msg);
+                    if(!msg.equals("")){
+                        cl.send(msg);
+                        txtMsg.setText("");
+                    }
                 } catch (IOException err) { 
                     err.printStackTrace(); 
                 } 
@@ -268,6 +249,7 @@ class MessengerPanel extends JPanel implements ActionListener {
             card.next(pnl);
         } catch (IOException err) {
             System.out.println("Cannot exit!");
+            System.out.println(err);
         }
     }
     public void exit() throws IOException {
@@ -278,4 +260,5 @@ class MessengerPanel extends JPanel implements ActionListener {
     public String getMessage() {
         return txtMsg.getText();
     }
+
 }
