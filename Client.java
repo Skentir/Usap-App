@@ -11,6 +11,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.*; 
 import java.time.format.DateTimeFormatter; 
+import java.nio.charset.*;
+import java.nio.file.*;
   
 public class Client extends JFrame 
 { 
@@ -20,7 +22,7 @@ public class Client extends JFrame
     private String uname;
 
     //For testing
-    private Scanner scn;
+    //private Scanner scn;
     
     private JPanel pnlContent;
     private CardLayout cardlayout;
@@ -28,6 +30,7 @@ public class Client extends JFrame
     private MessengerPanel messenger;
 
     private ArrayList<String> log;
+    private Boolean status;
 
     public Client() throws IOException {
         cardlayout = new CardLayout();
@@ -48,6 +51,7 @@ public class Client extends JFrame
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         log = new ArrayList<>();
+        status = false;
     }
 
     public void connect() throws IOException {
@@ -61,6 +65,8 @@ public class Client extends JFrame
            System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + login.getIP() + " -> " + login.getPort() + " -> " + login.getName());
            dos.writeUTF(uname);   
            log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + uname + " connecting to the server.");
+           status = true;
+           setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
     }
 
     public void listen() throws IOException {
@@ -70,14 +76,17 @@ public class Client extends JFrame
             public void run() { 
   
                 while (true) { 
-                    try { 
-                        // read the message sent to this client 
-                        String msg = dis.readUTF(); 
-                        System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + msg); 
-                        messenger.text.append("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + msg);
-                        log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + msg);
-                    } catch (IOException e) { 
-                        e.printStackTrace(); 
+                    if(status)
+                    {
+                        try { 
+                            // read the message sent to this client 
+                            String msg = dis.readUTF(); 
+                            System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + msg); 
+                            messenger.text.append("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + msg);
+                            log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + msg);
+                        } catch (IOException e) { 
+                            e.printStackTrace(); 
+                        }
                     } 
                 } 
             } 
@@ -90,6 +99,8 @@ public class Client extends JFrame
         dis.close();
         dos.close();
         s.close();
+        status = false;
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
 
     public void send(String message) throws IOException {
@@ -121,7 +132,19 @@ public class Client extends JFrame
         // readMessage thread 
         //client.listen();
   
-    } 
+    }
+    
+    public void addToLog(String s){
+        log.add(s);
+    }
+
+    public String getName(){
+        return this.uname;
+    }
+
+    public ArrayList<String> getLog(){
+        return this.log;
+    }
 } 
 
 class LoginPanel extends JPanel implements ActionListener {
@@ -153,7 +176,7 @@ class LoginPanel extends JPanel implements ActionListener {
         add(lblName);
         add(txtName);
         add(btnEnter);
-        setBackground(Color.red);
+        setBackground(new Color(255,120,120));
     }
     @Override
     public void actionPerformed (ActionEvent e) {
@@ -240,16 +263,32 @@ class MessengerPanel extends JPanel implements ActionListener {
         add(txtMsg);
         add(btnSend);
         add(btnLogout);
-        setBackground(Color.blue);
-    }   
+        setBackground(new Color(120,120,255));
+    } 
+      
     @Override
     public void actionPerformed(ActionEvent e) {
-        try {
-            exit();
-            card.next(pnl);
-        } catch (IOException err) {
-            System.out.println("Cannot exit!");
-            System.out.println(err);
+        if(e.getActionCommand().equals("Logout")){
+            try {
+                int dialogResult = JOptionPane.showConfirmDialog (this, "Would you like to save the message history to a log file?","Save log?",JOptionPane.YES_NO_OPTION);
+                if(dialogResult == JOptionPane.YES_OPTION){
+                    cl.addToLog("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Disconnected from server.");
+                    String currentDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH-mm-ss"));
+                    try{
+                        Path file = Paths.get("[" + currentDateTime + "] " + cl.getName() + " log.txt");
+                        Files.write(file, cl.getLog(), StandardCharsets.UTF_8);
+                        JOptionPane.showMessageDialog(this, "Successfully saved log! Check the working directory of this program.\n Filename: " + "[" + currentDateTime + "] " + cl.getName() + " log.txt");
+                    }catch (IOException error){
+                        JOptionPane.showMessageDialog(this, "Error with creating log! Proceeding with logout without creating log.");
+                        error.printStackTrace();
+                    }
+                }
+                exit();
+                card.next(pnl);
+            } catch (IOException err) {
+                System.out.println("Cannot exit!");
+                System.out.println(err);
+            }
         }
     }
     public void exit() throws IOException {

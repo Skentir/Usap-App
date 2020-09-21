@@ -31,16 +31,9 @@ public class Server
                 log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Server shutdown.");
                 String currentDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH-mm-ss"));
                 try{
-                    /*File logFile = new File("[" + currentDateTime + "] log.txt");
-                    logFile.createNewFile();
-                    FileWriter file1 = new FileWriter("[" + currentDateTime + "] log.txt");
-                    for(String a: log){
-                        file1.write(a + String.format("%n"));
-                    }
-                    file1.close();
-                    System.out.println("Successfully wrote log file! Shutting down server for good.");*/
-                    Path file = Paths.get("[" + currentDateTime + "] log.txt");
+                    Path file = Paths.get("[" + currentDateTime + "] server log.txt");
                     Files.write(file, log, StandardCharsets.UTF_8);
+                    System.out.println("Successfully wrote log file! Shutting down server for good.");
                 }catch (IOException e){
                     System.out.println("Error with creating log!");
                     e.printStackTrace();
@@ -61,7 +54,7 @@ public class Server
             // Accept the incoming request 
             s = ss.accept(); 
   
-            System.out.println("New client request received : " + s); 
+            //System.out.println("New client request received : " + s); 
               
             // obtain input and output streams 
             DataInputStream dis = new DataInputStream(s.getInputStream()); 
@@ -69,7 +62,7 @@ public class Server
             
             String tempName = dis.readUTF();
 
-            System.out.println("Creating a new handler for " + tempName + "..."); 
+            //System.out.println("Creating a new handler for " + tempName + "..."); 
             
             // Create a new handler object for handling this request. 
             ClientHandler mtch = new ClientHandler(s, tempName, dis, dos, log); 
@@ -77,7 +70,7 @@ public class Server
             // Create a new Thread with this object. 
             Thread t = new Thread(mtch); 
               
-            System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Adding " + tempName + " to active client list"); 
+            System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + tempName + " connected!"); 
   
             // add this client to active clients list 
             ar.add(mtch); 
@@ -108,8 +101,7 @@ class ClientHandler implements Runnable
     ArrayList<String> log;
 
     // constructor 
-    public ClientHandler(Socket s, String name, 
-                            DataInputStream dis, DataOutputStream dos, ArrayList<String> log) { 
+    public ClientHandler(Socket s, String name, DataInputStream dis, DataOutputStream dos, ArrayList<String> log) { 
         this.dis = dis; 
         this.dos = dos; 
         this.name = name; 
@@ -160,7 +152,7 @@ class ClientHandler implements Runnable
                     log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + this.name + " disconnected from the server.");
                     break; 
                 } 
-                System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + this.name + ":" + received); 
+                System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + this.name + ": " + received); 
                 log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + this.name + ": " + received);
 
                 // send to all other users
@@ -185,7 +177,8 @@ class ClientHandler implements Runnable
             // closing resources 
             this.dis.close(); 
             this.dos.close(); 
-              
+            Server.ar.remove(this);
+            Server.i--;
         }catch(IOException e){ 
             e.printStackTrace(); 
         } 
