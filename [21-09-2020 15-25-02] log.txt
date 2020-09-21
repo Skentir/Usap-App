@@ -1,0 +1,9 @@
+[15:24:17.808] Server started. Port 12345
+[15:24:36.027] User nick connected.
+[15:24:41.066] User matt connected.
+nick: hello!
+matt: thank you!
+matt: goodbye!
+[15:24:52.653] matt disconnected from the server.
+[15:24:53.807] nick disconnected from the server.
+[15:25:02.703]  Server shutdown.

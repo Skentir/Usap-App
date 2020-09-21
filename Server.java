@@ -7,6 +7,8 @@ import java.util.*;
 import java.net.*; 
 import java.time.*; 
 import java.time.format.DateTimeFormatter; 
+import java.nio.charset.*;
+import java.nio.file.*;
   
 // Server class 
 public class Server
@@ -23,6 +25,28 @@ public class Server
   
     public static void main(String[] args) throws IOException  
     { 
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() { 
+                System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Shutting down server! Saving to a log file.");
+                log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Server shutdown.");
+                String currentDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH-mm-ss"));
+                try{
+                    /*File logFile = new File("[" + currentDateTime + "] log.txt");
+                    logFile.createNewFile();
+                    FileWriter file1 = new FileWriter("[" + currentDateTime + "] log.txt");
+                    for(String a: log){
+                        file1.write(a + String.format("%n"));
+                    }
+                    file1.close();
+                    System.out.println("Successfully wrote log file! Shutting down server for good.");*/
+                    Path file = Paths.get("[" + currentDateTime + "] log.txt");
+                    Files.write(file, log, StandardCharsets.UTF_8);
+                }catch (IOException e){
+                    System.out.println("Error with creating log!");
+                    e.printStackTrace();
+                }
+             }
+         });
         ServerSocket ss = new ServerSocket(Integer.parseInt(args[0])); 
           
         Socket s; 
@@ -137,7 +161,7 @@ class ClientHandler implements Runnable
                     break; 
                 } 
                 System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + this.name + ":" + received); 
-                log.add(this.name + ": " + received);
+                log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + this.name + ": " + received);
 
                 // send to all other users
                 // ar is the vector storing client of active users 
