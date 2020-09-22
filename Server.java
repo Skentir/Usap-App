@@ -160,15 +160,24 @@ class ClientHandler implements Runnable
                     System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Client " + this.name + " disconnecting!");
                     log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + this.name + " disconnected from the server.");
                     break; 
-                }else if(received.contains("#filesend")){
+                }//file sending
+                else if(received.contains("#filesend")){
+
                     String[] names = received.split("#");
-                    System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Receiving file " + names[names.length-1] + " from " + this.name);
-                    log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Receiving file " + names[names.length-1] + " from " + this.name);
-                    System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Sending " + names[names.length-1] + " to the other clients.");
+                    System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Receiving file " + names[2] + " from " + this.name);
+                    log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Receiving file " + names[2] + " from " + this.name);
+
+                    //storing the file
+                    ByteArrayOutputStream baos = store(dis,Long.parseLong(names[3]));
+                    byte[] data = baos.toByteArray();
+
+                    System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Sending " + names[2] + " to the other clients.");
                     for(ClientHandler mc: Server.ar){
                         if (!mc.name.equals(this.name) && mc.isloggedin==true)  
                         { 
-                            mc.dos.writeUTF("#filesend#" + names[names.length-1] + "#" + this.name); 
+                            mc.dos.writeUTF("#filesend#" + names[2] + "#" + this.name); 
+                            mc.dos.write(data,0,data.length);
+                            mc.dos.flush();
                         }
                     }
                 } 
@@ -205,4 +214,28 @@ class ClientHandler implements Runnable
             e.printStackTrace(); 
         } 
     } 
+
+    public int copy(InputStream in, OutputStream out) throws IOException {
+		byte[] buf = new byte[2048];
+		int bytesRead = 0;
+		int totalBytes = 0;
+		while((bytesRead = in.read(buf)) != -1) {
+		  totalBytes += bytesRead;
+		  out.write(buf, 0, bytesRead);
+		}
+		return totalBytes;
+    }
+
+    public ByteArrayOutputStream store(InputStream in,long length) throws IOException{
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] buffer = new byte[2048];
+        int len;
+        int totalLen = 0;
+        while ((len = in.read(buffer)) != -1 && totalLen < length){
+            baos.write(buffer,0,len);
+            totalLen += len;
+        }
+        baos.flush();
+        return baos;
+    }
 } 

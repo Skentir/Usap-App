@@ -65,7 +65,7 @@ public class Client extends JFrame
            uname = login.getName();
            System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + login.getIP() + " -> " + login.getPort() + " -> " + login.getName());
            dos.writeUTF(uname);   
-           this.messenger.text.append("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + uname + " connecting to the server.");
+           this.messenger.text.append("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + uname + " connecting to the server.\n");
            log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + uname + " connecting to the server.");
            status = true;
            setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -83,20 +83,25 @@ public class Client extends JFrame
                         try { 
                             // read the message sent to this client 
                             String msg = dis.readUTF(); 
+                            String finalOutput;
 
                             //receiving a file
                             if(msg.contains("#filesend")){
                                 String[] tokens = msg.split("#");
-                                System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Receiving file " + tokens[2] + " from " + tokens[3]);
-                                messenger.text.append("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Receiving file " + tokens[2] + " from " + tokens[3]);
-                                log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Receiving file " + tokens[2] + " from " + tokens[3]);
+                                finalOutput = "[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Receiving file " + tokens[2] + " from " + tokens[3];
+                                System.out.println(finalOutput);
+                                messenger.text.append(finalOutput);
+                                log.add(finalOutput);
                                 String savedir = messenger.getSaveDirectory(tokens[2]);
-                                System.out.println(savedir);
+                                FileOutputStream fos = new FileOutputStream(savedir);
+                                copy(dis,fos);
+                                fos.close();
                             }
                             else{
-                                System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + msg); 
-                                messenger.text.append("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + msg);
-                                log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + msg);
+                                finalOutput = "[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + msg;
+                                System.out.println(finalOutput); 
+                                messenger.text.append(finalOutput);
+                                log.add(finalOutput);
                             }
                         } catch (IOException e) { 
                             e.printStackTrace(); 
@@ -129,8 +134,13 @@ public class Client extends JFrame
 
     public void sendFile(String filepath) throws FileNotFoundException, IOException{
         String[] path = filepath.split(Pattern.quote(File.separator));
-        dos.writeUTF("#filesend#" + path[path.length-1]);
+        FileInputStream fis = new FileInputStream(new File(filepath));
+        long size = new File(filepath).length();
+        dos.writeUTF("#filesend#" + path[path.length-1] + "#" + size);
         messenger.text.append("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Sending file " + path[path.length-1]);
+        copy(fis,dos);
+        dos.flush();
+        dos.writeUTF("#EOF!");
     }
 
     public void setName() {
@@ -165,6 +175,17 @@ public class Client extends JFrame
     public ArrayList<String> getLog(){
         return this.log;
     }
+
+    public int copy(InputStream in, OutputStream out) throws IOException {
+		byte[] buf = new byte[2048];
+		int bytesRead = 0;
+		int totalBytes = 0;
+		while((bytesRead = in.read(buf)) != -1) {
+		  totalBytes += bytesRead;
+		  out.write(buf, 0, bytesRead);
+		}
+		return totalBytes;
+	}
 } 
 
 class LoginPanel extends JPanel implements ActionListener {
