@@ -160,21 +160,34 @@ class ClientHandler implements Runnable
                     System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Client " + this.name + " disconnecting!");
                     log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + this.name + " disconnected from the server.");
                     break; 
+                }else if(received.contains("#filesend")){
+                    String[] names = received.split("#");
+                    System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Receiving file " + names[names.length-1] + " from " + this.name);
+                    log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Receiving file " + names[names.length-1] + " from " + this.name);
+                    System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Sending " + names[names.length-1] + " to the other clients.");
+                    for(ClientHandler mc: Server.ar){
+                        if (!mc.name.equals(this.name) && mc.isloggedin==true)  
+                        { 
+                            mc.dos.writeUTF("#filesend#" + names[names.length-1] + "#" + this.name); 
+                        }
+                    }
                 } 
-                System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + this.name + ": " + received); 
-                log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + this.name + ": " + received);
+                else{
+                    System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + this.name + ": " + received); 
+                    log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + this.name + ": " + received);
 
-                // send to all other users
-                // ar is the vector storing client of active users 
-                for (ClientHandler mc : Server.ar)  
-                { 
-                    // if the recipient is found, write on its 
-                    // output stream 
-                    if (!mc.name.equals(this.name) && mc.isloggedin==true)  
+                    // send to all other users
+                    // ar is the vector storing client of active users 
+                    for (ClientHandler mc : Server.ar)  
                     { 
-                        mc.dos.writeUTF(this.name+" : "+ received+"\n"); 
+                        // if the recipient is found, write on its 
+                        // output stream 
+                        if (!mc.name.equals(this.name) && mc.isloggedin==true)  
+                        { 
+                            mc.dos.writeUTF(this.name+" : "+ received+"\n"); 
+                        } 
                     } 
-                } 
+                }
             } catch (IOException e) { 
                   
                 e.printStackTrace(); 

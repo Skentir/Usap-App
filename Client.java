@@ -13,6 +13,7 @@ import java.time.*;
 import java.time.format.DateTimeFormatter; 
 import java.nio.charset.*;
 import java.nio.file.*;
+import java.util.regex.*;
   
 public class Client extends JFrame 
 { 
@@ -64,6 +65,7 @@ public class Client extends JFrame
            uname = login.getName();
            System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + login.getIP() + " -> " + login.getPort() + " -> " + login.getName());
            dos.writeUTF(uname);   
+           this.messenger.text.append("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + uname + " connecting to the server.");
            log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + uname + " connecting to the server.");
            status = true;
            setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -81,9 +83,21 @@ public class Client extends JFrame
                         try { 
                             // read the message sent to this client 
                             String msg = dis.readUTF(); 
-                            System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + msg); 
-                            messenger.text.append("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + msg);
-                            log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + msg);
+
+                            //receiving a file
+                            if(msg.contains("#filesend")){
+                                String[] tokens = msg.split("#");
+                                System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Receiving file " + tokens[2] + " from " + tokens[3]);
+                                messenger.text.append("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Receiving file " + tokens[2] + " from " + tokens[3]);
+                                log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Receiving file " + tokens[2] + " from " + tokens[3]);
+                                String savedir = messenger.getSaveDirectory(tokens[2]);
+                                System.out.println(savedir);
+                            }
+                            else{
+                                System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + msg); 
+                                messenger.text.append("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + msg);
+                                log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + msg);
+                            }
                         } catch (IOException e) { 
                             e.printStackTrace(); 
                         }
@@ -111,6 +125,12 @@ public class Client extends JFrame
             log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + this.uname + ": " + message + "\n");
         } else
             messenger.exit();
+    }
+
+    public void sendFile(String filepath) throws FileNotFoundException, IOException{
+        String[] path = filepath.split(Pattern.quote(File.separator));
+        dos.writeUTF("#filesend#" + path[path.length-1]);
+        messenger.text.append("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Sending file " + path[path.length-1]);
     }
 
     public void setName() {
@@ -262,8 +282,11 @@ class MessengerPanel extends JPanel implements ActionListener {
             @Override
             public void actionPerformed(ActionEvent e){
                 try{
+                    fc.setDialogTitle("Choose a file to send");
                     int state = fc.showOpenDialog(cl);
-                    System.out.println(state);
+                    if(state == JFileChooser.APPROVE_OPTION){
+                        cl.sendFile(fc.getSelectedFile().getAbsolutePath());
+                    }
                 } catch (Exception err){
                     err.printStackTrace();
                 }
@@ -317,4 +340,22 @@ class MessengerPanel extends JPanel implements ActionListener {
         return txtMsg.getText();
     }
 
+    public String getSaveDirectory(String defaultFileName){
+        String choice;
+        fc.setSelectedFile(new File(defaultFileName));
+        fc.setDialogTitle("Specify a file to save.");
+        int state = fc.showOpenDialog(cl);
+        if(state == JFileChooser.APPROVE_OPTION){
+            choice = fc.getSelectedFile().getAbsolutePath();
+            fc.setSelectedFile(new File(""));
+            fc.setCurrentDirectory(new File(System.getProperty("user.dir")));
+            return choice;
+        }
+        else{
+            choice = System.getProperty("user.dir") + "\\" + defaultFileName;
+            fc.setSelectedFile(new File(""));
+            fc.setCurrentDirectory(new File(System.getProperty("user.dir")));
+            return choice;
+        }
+    }
 }
