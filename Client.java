@@ -46,7 +46,7 @@ public class Client extends JFrame
         setContentPane(pnlContent);
         setLocationRelativeTo(null);
         setResizable(false);
-        setSize(250,300);
+        setSize(250,320);
         setVisible(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
@@ -218,7 +218,9 @@ class MessengerPanel extends JPanel implements ActionListener {
     JTextField txtMsg;
     JButton btnSend;
     JButton btnLogout;
+    JButton btnSendFile;
     JScrollPane scroll;
+    JFileChooser fc;
 
     CardLayout card;
     JPanel pnl;
@@ -237,6 +239,8 @@ class MessengerPanel extends JPanel implements ActionListener {
         JLabel lblMsg = new JLabel("Message");
         btnSend = new JButton("Send");
         btnLogout = new JButton("Logout");
+        btnSendFile = new JButton("Send File");
+        fc = new JFileChooser(System.getProperty("user.dir"));
 
         btnSend.addActionListener(new ActionListener() {
             @Override
@@ -254,6 +258,18 @@ class MessengerPanel extends JPanel implements ActionListener {
             }
         });
 
+        btnSendFile.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e){
+                try{
+                    int state = fc.showOpenDialog(cl);
+                    System.out.println(state);
+                } catch (Exception err){
+                    err.printStackTrace();
+                }
+            };
+        });
+
         btnLogout.addActionListener(this);
 
         scroll = new JScrollPane(text);
@@ -263,6 +279,7 @@ class MessengerPanel extends JPanel implements ActionListener {
         add(txtMsg);
         add(btnSend);
         add(btnLogout);
+        add(btnSendFile);
         setBackground(new Color(120,120,255));
     } 
       

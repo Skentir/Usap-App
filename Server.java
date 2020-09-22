@@ -9,6 +9,7 @@ import java.time.*;
 import java.time.format.DateTimeFormatter; 
 import java.nio.charset.*;
 import java.nio.file.*;
+import javax.swing.*;
   
 // Server class 
 public class Server
@@ -27,16 +28,22 @@ public class Server
     { 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() { 
-                System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Shutting down server! Saving to a log file.");
+                System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Shutting down server!");
                 log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Server shutdown.");
-                String currentDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH-mm-ss"));
-                try{
-                    Path file = Paths.get("[" + currentDateTime + "] server log.txt");
-                    Files.write(file, log, StandardCharsets.UTF_8);
-                    System.out.println("Successfully wrote log file! Shutting down server for good.");
-                }catch (IOException e){
-                    System.out.println("Error with creating log!");
-                    e.printStackTrace();
+                System.out.println("====================");
+                Scanner scan = new Scanner(System.in);
+                System.out.print("Would you like to save history to a log file? (y/n) ");
+                String yesno = scan.nextLine();
+                if(yesno.equalsIgnoreCase("y")){
+                    String currentDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH-mm-ss"));
+                    try{
+                        Path file = Paths.get("[" + currentDateTime + "] server log.txt");
+                        Files.write(file, log, StandardCharsets.UTF_8);
+                        System.out.println("Successfully wrote log file! Shutting down server for good.");
+                    }catch (IOException e){
+                        System.out.println("Error with creating log!");
+                        e.printStackTrace();
+                    }
                 }
              }
          });
@@ -44,6 +51,8 @@ public class Server
           
         Socket s; 
         
+        System.out.println("Server running at port " + args[0] + ".\nUse CTRL+C to exit the server.\n====================");
+
         System.out.println("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Server started! Listening at port " + args[0]);
         log.add("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Server started. Port " + args[0]);
 
