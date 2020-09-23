@@ -5,8 +5,7 @@ import java.io.*;
 import java.net.*; 
 import java.util.*; 
 import javax.swing.*;
-import java.awt.CardLayout;
-import java.awt.Color;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.*; 
@@ -47,7 +46,7 @@ public class Client extends JFrame
         setContentPane(pnlContent);
         setLocationRelativeTo(null);
         setResizable(false);
-        setSize(250,320);
+        setSize(300,400);
         setVisible(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
@@ -90,7 +89,7 @@ public class Client extends JFrame
                                 String[] tokens = msg.split("#");
                                 finalOutput = "[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Receiving file " + tokens[2] + " from " + tokens[3];
                                 System.out.println(finalOutput);
-                                messenger.text.append(finalOutput);
+                                messenger.text.append(finalOutput + "\n");
                                 log.add(finalOutput);
                                 String savedir = messenger.getSaveDirectory(tokens[2]);
                                 FileOutputStream fos = new FileOutputStream(savedir);
@@ -137,7 +136,7 @@ public class Client extends JFrame
         FileInputStream fis = new FileInputStream(new File(filepath));
         long size = new File(filepath).length();
         dos.writeUTF("#filesend#" + path[path.length-1] + "#" + size);
-        messenger.text.append("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Sending file " + path[path.length-1]);
+        messenger.text.append("[" + (LocalTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)) + "] " + "Sending file " + path[path.length-1] + "\n");
         copy(fis,dos);
         dos.flush();
         dos.writeUTF("#EOF!");
@@ -210,14 +209,34 @@ class LoginPanel extends JPanel implements ActionListener {
         btnEnter = new JButton("Enter");
         btnEnter.addActionListener (this);
         
-        add(lblIP);
-        add(txtIP);
-        add(lblPort);
-        add(txtPort);
-        add(lblName);
-        add(txtName);
-        add(btnEnter);
-        setBackground(new Color(255,120,120));
+        this.setLayout(new BorderLayout());
+        JPanel tempPanel = new JPanel();
+        tempPanel.setBackground(new Color(255,120,120));
+        this.add(tempPanel, BorderLayout.NORTH);
+        tempPanel = new JPanel();
+        tempPanel.setBackground(new Color(255,120,120));
+        this.add(tempPanel, BorderLayout.SOUTH);
+        tempPanel = new JPanel();
+        tempPanel.setBackground(new Color(255,120,120));
+        this.add(tempPanel, BorderLayout.WEST);
+        tempPanel = new JPanel();
+        tempPanel.setBackground(new Color(255,120,120));
+		this.add(tempPanel, BorderLayout.EAST);
+
+        tempPanel = new JPanel();
+        tempPanel.setLayout(new GridLayout(10,1));
+        tempPanel.setBackground(new Color(255,120,120));
+        tempPanel.add(lblIP);
+        tempPanel.add(txtIP);
+        tempPanel.add(lblPort);
+        tempPanel.add(txtPort);
+        tempPanel.add(lblName);
+        tempPanel.add(txtName);
+        JPanel tempPanel2 = new JPanel();
+        tempPanel2.setBackground(new Color(255,120,120));
+        tempPanel.add(tempPanel2);
+        tempPanel.add(btnEnter);
+        this.add(tempPanel, BorderLayout.CENTER);
     }
     @Override
     public void actionPerformed (ActionEvent e) {
@@ -272,6 +291,9 @@ class MessengerPanel extends JPanel implements ActionListener {
         this.pnl = pnl;
         this.cl = cl;
 
+        GridBagLayout gbl = new GridBagLayout();
+        GridBagConstraints gbc = new GridBagConstraints();
+
         text = new JTextArea(10,20);
         text.setEditable(false);
 
@@ -316,15 +338,54 @@ class MessengerPanel extends JPanel implements ActionListener {
 
         btnLogout.addActionListener(this);
 
+        this.setLayout(new BorderLayout());
+
+        JPanel tempPanel = new JPanel();
+        tempPanel.setBackground(new Color(120,120,255));
+        this.add(tempPanel, BorderLayout.NORTH);
+        tempPanel = new JPanel();
+        tempPanel.setBackground(new Color(120,120,255));
+        this.add(tempPanel, BorderLayout.SOUTH);
+        tempPanel = new JPanel();
+        tempPanel.setBackground(new Color(120,120,255));
+        this.add(tempPanel, BorderLayout.WEST);
+        tempPanel = new JPanel();
+        tempPanel.setBackground(new Color(120,120,255));
+		this.add(tempPanel, BorderLayout.EAST);
+
+        tempPanel = new JPanel();
+        tempPanel.setLayout(gbl);
+        tempPanel.setBackground(new Color(120,120,255));
+
+        
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 0.5;
+        gbc.gridheight = 1;
+        gbc.gridwidth = 3;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        tempPanel.add(lblName,gbc);
+        gbc.gridheight = 5;
+        gbc.gridy = 1;
+        gbc.weighty = 1;
         scroll = new JScrollPane(text);
-        add(lblName);
-        add(scroll);
-        add(lblMsg);
-        add(txtMsg);
-        add(btnSend);
-        add(btnLogout);
-        add(btnSendFile);
-        setBackground(new Color(120,120,255));
+        tempPanel.add(scroll, gbc);
+        gbc.weighty = 0;
+        gbc.gridheight = 1;
+        gbc.gridy = 7;
+        tempPanel.add(lblMsg,gbc);
+        gbc.gridy = 8;
+        tempPanel.add(txtMsg,gbc);
+        gbc.gridwidth = 1;
+        gbc.gridy = 9;
+        gbc.gridx = 0;
+        tempPanel.add(btnSend,gbc);
+        gbc.gridx = 1;
+        tempPanel.add(btnLogout,gbc);
+        gbc.gridx = 2;
+        tempPanel.add(btnSendFile,gbc);
+        this.add(tempPanel, BorderLayout.CENTER);
+        
     } 
       
     @Override
